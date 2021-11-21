@@ -7,5 +7,5 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
 
 - This project is comprised of 3 parts :
 1. Textuel Analysis 
-2. EDA
+2. EDA ( Exploratory Data Analysis )
 3. Clustering
