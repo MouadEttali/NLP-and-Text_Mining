@@ -16,13 +16,13 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
 
 - This project is comprised of 3 parts:
 1. Tokenizing the text using :
-  + Word2Vec
-  + GloVe 
+  * Word2Vec
+  * GloVe 
 2. Clustering on orignal data (Classic 4 data which comprises of scientific articles' abstracts , and BBC data which contains headlines from the bbc news channel )
-  + This is done on the data without any dimensionality reduction technique
-  + We will be using this to benchmark against later methods
+  * This is done on the data without any dimensionality reduction technique
+  * We will be using this to benchmark against later methods
 3. Using Tandem methods, this is done by using :
   * dimensionality reduction technique 
-  * a clustering technique  
+  * A clustering technique  
 5. Clustering
 
