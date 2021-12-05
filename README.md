@@ -9,3 +9,14 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
 1. Textuel Analysis 
 2. EDA ( Exploratory Data Analysis )
 3. Clustering
+
+
+
+## Second project : Dimensionality Reduction and clustering + interprability.
+
+- This project is comprised of 3 parts:
+1. Clustering on orignal data (Classic 4 data which comprises of scientific articles' abstracts , and BBC data which contains headlines from the bbc news channel )
+2. + This is done on the data without any dimensionality reduction technique 
+3. EDA ( Exploratory Data Analysis )
+4. Clustering
+
