@@ -22,7 +22,7 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
   * This is done on the data without any dimensionality reduction technique
   * We will be using this to benchmark against later methods
 3. Using Tandem methods, this is done by using :
-  * dimensionality reduction technique 
+  * dimensionality reduction technique ( PCA , t-SNE , UMAP , Autoencoders)
   * A clustering technique  
 5. Clustering
 
