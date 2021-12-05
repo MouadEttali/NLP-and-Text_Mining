@@ -3,7 +3,7 @@
 
 In this notebook I will be adressing NLP and text mining tasks, starting off with the basics and then moving on to implementing some ideas from NLP articles into working codes. then some higher level concepts like Transformers,BERT and attention etc...
 
-## first project : Scientific Articles' abstract text mining 
+# first project : Scientific Articles' abstract text mining 
 
 - This project is comprised of 3 parts:
 1. Textuel Analysis 
@@ -12,17 +12,21 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
 
 
 
-## Second project : Dimensionality Reduction and clustering + interprability.
+# Second project : Dimensionality Reduction and clustering + interprability.
 
-- This project is comprised of 3 parts:
+## This project is comprised of 3 parts:
 1. Tokenizing the text using :
-  * Word2Vec
-  * GloVe 
+    * Word2Vec
+    * GloVe 
 2. Clustering on orignal data (Classic 4 data which comprises of scientific articles' abstracts , and BBC data which contains headlines from the bbc news channel )
-  * This is done on the data without any dimensionality reduction technique
-  * We will be using this to benchmark against later methods
+    * This is done on the data without any dimensionality reduction technique
+    * We will be using this to benchmark against later methods
 3. Using Tandem methods, this is done by using :
-  * dimensionality reduction technique ( PCA , t-SNE , UMAP , Autoencoders)
-  * A clustering technique  
-5. Clustering
+    * dimensionality reduction technique ( PCA , t-SNE , UMAP , Autoencoders)
+    * Followed by a clustering technique ( Kmeans, Spherical Kmeans , factorial Kmeans , Hierarchal clustering(WARD , Complete , Linkage and Single Metrics), and HDBSCAN 
+5. Clustering using combined methods ( where the dimension reduction and clustering are done at the same time ):
+    * Reduced kmeans
+    * Factorial kmeans
+    * Deep Clustering Network
+    * deep KMeans
 
