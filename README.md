@@ -31,7 +31,6 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
     * Deep Clustering Network
     * deep KMeans
  
- 
 ### PART2:
 1. Tokenizing the text using :
     * BERT
