@@ -3,7 +3,7 @@
 
 In this notebook I will be adressing NLP and text mining tasks, starting off with the basics and then moving on to implementing some ideas from NLP articles into working codes. then some higher level concepts like Transformers,BERT and attention etc...
 
-# first project : Scientific Articles' abstract text mining 
+# first project : Scientific Articles' abstract text mining.
 
 - This project is comprised of 3 parts:
 1. Textuel Analysis 
@@ -40,7 +40,7 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
     * We will be using this to benchmark against later methods.
 3. Using Tandem methods, this is done by using :
     * dimensionality reduction technique ( PCA , t-SNE , UMAP , Autoencoders)
-    * Followed by a clustering technique ( Kmeans, Spherical Kmeans , factorial Kmeans , Hierarchal clustering(WARD , Complete , Linkage and Single Metrics), and HDBSCAN 
+    * Followed by a clustering technique ( Kmeans, Spherical Kmeans , factorial Kmeans , Hierarchal clustering(WARD , Complete , Linkage and Single Metrics), and HDBSCAN.
 5. Clustering using combined methods ( where the dimension reduction and clustering are done at the same time ):
     * Reduced kmeans
     * Factorial kmeans
