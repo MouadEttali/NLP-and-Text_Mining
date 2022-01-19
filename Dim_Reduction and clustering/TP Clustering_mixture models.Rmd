@@ -1,0 +1,1060 @@
+---
+title: "TPClustering&MixedModels"
+author: "ME"
+date: "14/01/2022"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+
+# TP Clustering & mixture models.
+
+
+```{r}
+library(R.matlab)
+library(Rmixmod)
+library(mclust)
+library(NbClust)
+library(Factoshiny)
+library(lle)
+library(cluster)
+library(aricode)
+library(Rtsne)
+library(caret)
+```
+
+
+##  Question 1
+The JAFFE dataset consists of 213 images of different facial expressions from 10 different Japanese female subjects. Each subject was asked to do 7 facial expressions (6 basic facial expressions and neutral) and the images were annotated with average semantic ratings on each facial expression by 60 annotators.
+
+MNIST is a dataset of 60,000 small square 28×28 pixel grayscale images of handwritten single digits between 0 and 9.
+
+MFEA dataset consists of features of handwritten numerals (`0'--`9') extracted from a collection of Dutch utility maps. 200 patterns per class (for a total of 2,000 patterns) have been digitized in binary images.
+
+USPS is a digit dataset automatically scanned from envelopes by the U.S. Postal Service containing a total of 9,298 16×16 pixel grayscale samples; the images are centered, normalized and show a broad range of font styles.
+
+OPTIDIGITS dataset consists vectorised images of handwritten digits (0–9). The images have been compressed to 8x8, resulting in 64 dimensional observations. 
+
+## Questions 2 , 3 and 4 for each dataset
+### DATASET JAFFE
+```{r}
+JAFFElist=readMat("jaffe.mat")
+```
+
+
+```{r}
+str(JAFFElist)
+```
+
+```{r}
+JAFFE = as.data.frame(JAFFElist$X)
+class=as.factor(t(as.data.frame(JAFFElist$y)))
+JAFFE=data.frame(JAFFE,class)
+JAFFE
+```
+
+```{r}
+#rm(class)
+dim(JAFFE)
+table(JAFFE$class)
+```
+
+```{r}
+pca.JAFFE=PCA(JAFFE,ncp=2,quali.sup = 677)
+plot(pca.JAFFE, habillage=677)
+```
+On peut dire que les individus sont regroupés dans des clusters, les unes plus confondues que les autres. les 243 individus (images) sont regroupés vers chaqune des 10 femmes. Ainsi il semble quelque femmes sont plus similaires que les autres. 
+
+```{r}
+km.JAFFE=NbClust(JAFFE[,-677], method = "kmeans", distance = "euclidean", index = "silhouette",max.nc = 10)
+plot(pca.JAFFE$ind$coord,col=km.JAFFE$Best.partition ,main = " Kmeans sur JAFFE")
+table(km.JAFFE$Best.partition,JAFFE$class)
+NMI(km.JAFFE$Best.partition,JAFFE$class)
+ARI(km.JAFFE$Best.partition,JAFFE$class)
+km.JAFFE$Best.nc
+```
+
+
+```{r}
+ward.JAFFE=NbClust(JAFFE[,-677],method = "ward.D",index = "silhouette", max.nc = 10)
+table(ward.JAFFE$Best.partition,JAFFE$class)
+NMI(ward.JAFFE$Best.partition,JAFFE$class)
+ARI(ward.JAFFE$Best.partition,JAFFE$class)
+plot(pca.JAFFE$ind$coord,col=ward.JAFFE$Best.partition,main = "CAH Ward sur JAFFE")
+ward.JAFFE$Best.nc
+```
+```{r}
+average.JAFFE=NbClust(JAFFE[,-677],method = "average", max.nc = 10,index = "silhouette")
+plot(pca.JAFFE$ind$coord,col=average.JAFFE$Best.partition,main = "CAH average sur JAFFE")
+table(average.JAFFE$Best.partition,JAFFE$class)
+NMI(average.JAFFE$Best.partition,JAFFE$class)
+ARI(average.JAFFE$Best.partition,JAFFE$class)
+average.JAFFE$Best.nc
+```
+
+```{r}
+single.JAFFE=NbClust(JAFFE[,-677],method = "single", max.nc = 10,index = "silhouette")
+plot(pca.JAFFE$ind$coord,col=single.JAFFE$Best.partition,main = "CAH single sur JAFFE")
+table(single.JAFFE$Best.partition,JAFFE$class)
+NMI(single.JAFFE$Best.partition,JAFFE$class)
+ARI(single.JAFFE$Best.partition,JAFFE$class)
+single.JAFFE$Best.nc
+```
+
+```{r}
+complete.JAFFE=NbClust(JAFFE[,-677],method = "complete",index = "silhouette", max.nc = 10)
+plot(pca.JAFFE$ind$coord,col=complete.JAFFE$Best.partition,main = "CAH complete sur JAFFE")
+table(complete.JAFFE$Best.partition,JAFFE$class)
+NMI(complete.JAFFE$Best.partition,JAFFE$class)
+ARI(complete.JAFFE$Best.partition,JAFFE$class)
+complete.JAFFE$Best.nc
+
+```
+
+On peut choisir 8 ( la moyenne des résultat) classes pour JAFFE dataset.
+
+### DATASET MNIST
+```{r}
+m=readMat("MNIST5.mat")
+MNIST5=lapply(m, unlist, use.names=FALSE)
+MNIST5=as.data.frame(MNIST5$X)
+class=as.factor(t(as.data.frame(m$y)))
+MNIST5=data.frame(m$X,class)
+rm(class)
+dim(MNIST5)
+table(MNIST5$class)
+```
+
+```{r}
+pca.MNIST5=PCA(MNIST5,ncp=2,quali.sup = 785)
+plot(pca.MNIST5, habillage=785)
+```
+```{r}
+km.MNIST5=NbClust(MNIST5[,-785], method = "kmeans", distance = "euclidean", index = "silhouette",max.nc = 10)
+plot(pca.MNIST5$ind$coord,col=km.MNIST5$Best.partition ,main = " Kmeans sur MNIST5")
+table(km.MNIST5$Best.partition,MNIST5$class)
+NMI(km.MNIST5$Best.partition,MNIST5$class)
+ARI(km.MNIST5$Best.partition,MNIST5$class)
+km.MNIST5$Best.nc
+```
+
+
+```{r}
+ward.MNIST5=NbClust(MNIST5[,-785],method = "ward.D",index = "silhouette", max.nc = 10)
+table(ward.MNIST5$Best.partition,MNIST5$class)
+NMI(ward.MNIST5$Best.partition,MNIST5$class)
+ARI(ward.MNIST5$Best.partition,MNIST5$class)
+plot(pca.MNIST5$ind$coord,col=ward.MNIST5$Best.partition,main = "CAH Ward sur MNIST5")
+ward.MNIST5$Best.nc
+```
+
+```{r}
+average.MNIST5=NbClust(MNIST5[,-785],method = "average", max.nc = 10,index = "silhouette")
+plot(pca.MNIST5$ind$coord,col=average.MNIST5$Best.partition,main = "CAH average sur MNIST5")
+table(average.MNIST5$Best.partition,MNIST5$class)
+NMI(average.MNIST5$Best.partition,MNIST5$class)
+ARI(average.MNIST5$Best.partition,MNIST5$class)
+average.MNIST5$Best.nc
+```
+ 
+ 
+ 
+```{r}
+single.MNIST5=NbClust(MNIST5[,-785],method = "single", max.nc = 10,index = "silhouette")
+plot(pca.MNIST5$ind$coord,col=single.MNIST5$Best.partition,main = "CAH single sur MNIST5")
+table(single.MNIST5$Best.partition,MNIST5$class)
+NMI(single.MNIST5$Best.partition,MNIST5$class)
+ARI(single.MNIST5$Best.partition,MNIST5$class)
+single.MNIST5$Best.nc
+```
+
+```{r}
+complete.MNIST5=NbClust(MNIST5[,-785],method = "complete",index = "silhouette", max.nc = 10)
+plot(pca.MNIST5$ind$coord,col=complete.MNIST5$Best.partition,main = "CAH complete sur MNIST5")
+table(complete.MNIST5$Best.partition,MNIST5$class)
+NMI(complete.MNIST5$Best.partition,MNIST5$class)
+ARI(complete.MNIST5$Best.partition,MNIST5$class)
+complete.MNIST5$Best.nc
+
+```
+On peut choisir 2 ( la moyenne des résultat) classes pour MNIST5 dataset.
+
+### DATASET MFEA
+```{r}
+mf=readMat("MFEAT1.mat")
+mfeat=lapply(mf, unlist, use.names=FALSE)
+mfeat=as.data.frame(mfeat$X)
+mfeat
+class=as.factor(t(as.data.frame(mf$y)))
+mfeat=data.frame(mf$X,class)
+rm(class)
+dim(mfeat)
+table(mfeat$class)
+```
+
+```{r}
+pca.mfeat=PCA(mfeat,ncp=2,quali.sup = 241)
+plot(pca.mfeat, habillage=241)
+```
+
+
+
+```{r}
+km.mfeat=NbClust(mfeat[,-241], method = "kmeans", distance = "euclidean", index = "silhouette",max.nc = 10)
+plot(pca.mfeat$ind$coord,col=km.mfeat$Best.partition)
+table(km.mfeat$Best.partition,mfeat$class)
+NMI(km.mfeat$Best.partition,mfeat$class)
+ARI(km.mfeat$Best.partition,mfeat$class)
+km.mfeat$Best.nc
+```
+
+
+```{r}
+ward.mfeat=NbClust(mfeat[,-241],method = "ward.D",index = "silhouette", max.nc = 10)
+table(ward.mfeat$Best.partition,mfeat$class)
+NMI(ward.mfeat$Best.partition,mfeat$class)
+ARI(ward.mfeat$Best.partition,mfeat$class)
+plot(pca.mfeat$ind$coord,col=ward.mfeat$Best.partition,main = "CAH Ward sur mfeat")
+ward.mfeat$Best.nc
+```
+
+```{r}
+average.mfeat=NbClust(mfeat[,-241],method = "average", max.nc = 10,index = "silhouette")
+plot(pca.mfeat$ind$coord,col=average.mfeat$Best.partition,main = "CAH average sur mfeat")
+table(average.mfeat$Best.partition,mfeat$class)
+NMI(average.mfeat$Best.partition,mfeat$class)
+ARI(average.mfeat$Best.partition,mfeat$class)
+average.mfeat$Best.nc
+```
+
+```{r}
+single.mfeat=NbClust(mfeat[,-241],method = "single",index = "silhouette", max.nc = 10)
+plot(pca.mfeat$ind$coord,col=single.mfeat$Best.partition,main = "CAH single sur mfeat")
+table(single.mfeat$Best.partition,mfeat$class)
+NMI(single.mfeat$Best.partition,mfeat$class)
+ARI(single.mfeat$Best.partition,mfeat$class)
+single.mfeat$Best.nc
+```
+
+```{r}
+complete.mfeat=NbClust(mfeat[,-241],method = "complete",index = "silhouette", max.nc = 10)
+plot(pca.mfeat$ind$coord,col=complete.mfeat$Best.partition,main = "CAH complete sur mfeat")
+table(complete.mfeat$Best.partition,mfeat$class)
+NMI(complete.mfeat$Best.partition,mfeat$class)
+ARI(complete.mfeat$Best.partition,mfeat$class)
+complete.mfeat$Best.nc
+```
+
+
+On peut choisir 5 ( la moyenne des résultat) classes pour mfeat dataset.
+
+###  DATASET USPS
+
+```{r}
+us=readMat("USPS.mat")
+usps=lapply(us, unlist, use.names=FALSE)
+usps=as.data.frame(usps$X)
+class=as.factor(t(as.data.frame(us$y)))
+usps=data.frame(us$X,class)
+rm(class)
+dim(usps)
+table(usps$class)
+```
+
+
+```{r}
+pca.usps=PCA(usps,ncp=2,quali.sup = 257)
+plot(pca.usps, habillage=257)
+```
+
+
+```{r}
+km.usps=NbClust(usps[,-257], method = "kmeans", distance = "euclidean", index = "silhouette",max.nc = 10)
+plot(pca.usps$ind$coord,col=km.usps$Best.partition)
+table(km.usps$Best.partition,usps$class)
+NMI(km.usps$Best.partition,usps$class)
+ARI(km.usps$Best.partition,usps$class)
+km.usps$Best.nc
+```
+
+
+```{r}
+ward.usps=NbClust(usps[,-257],method = "ward.D",index = "silhouette", max.nc = 10)
+table(ward.usps$Best.partition,usps$class)
+NMI(ward.usps$Best.partition,usps$class)
+ARI(ward.usps$Best.partition,usps$class)
+plot(pca.usps$ind$coord,col=ward.usps$Best.partition,main = "CAH Ward sur usps")
+ward.usps$Best.nc
+```
+
+```{r}
+average.usps=NbClust(usps[,-257],method = "average" ,max.nc = 10,index = "silhouette")
+plot(pca.usps$ind$coord,col=average.usps$Best.partition,main = "CAH average sur usps")
+table(average.usps$Best.partition,usps$class)
+NMI(average.usps$Best.partition,usps$class)
+ARI(average.usps$Best.partition,usps$class)
+average.usps$Best.nc
+```
+
+```{r}
+single.usps=NbClust(usps[,-257],method = "single",index = "silhouette", max.nc = 10)
+plot(pca.usps$ind$coord,col=single.usps$Best.partition,main = "CAH single sur usps")
+table(single.usps$Best.partition,usps$class)
+NMI(single.usps$Best.partition,usps$class)
+ARI(single.usps$Best.partition,usps$class)
+single.usps$Best.nc
+```
+
+
+```{r}
+complete.usps=NbClust(usps[,-257],method = "complete",index = "silhouette", max.nc = 10)
+plot(pca.usps$ind$coord,col=complete.usps$Best.partition,main = "CAH complete sur usps")
+table(complete.usps$Best.partition,usps$class)
+NMI(complete.usps$Best.partition,usps$class)
+ARI(complete.usps$Best.partition,usps$class)
+complete.usps$Best.nc
+```
+
+
+we can choose 3  classes for USPS 
+
+
+
+### DATASET OPTIDIGTS.
+
+```{r}
+op=readMat("Optdigits.mat")
+optdigits=lapply(op, unlist, use.names=FALSE)
+optdigits=as.data.frame(op$X)
+class=as.factor(t(as.data.frame(op$y)))
+optdigits=data.frame(op$X,class)
+rm(class)
+dim(optdigits)
+table(optdigits$class)
+```
+
+
+```{r}
+pca.optdigits= PCA(optdigits,ncp=2, quali.sup = 65)
+plot(pca.optdigits, habillage=65)
+```
+
+
+```{r}
+km.optdigits=NbClust(optdigits[,-65], method = "kmeans", distance = "euclidean", index = "silhouette",max.nc = 10)
+plot(pca.optdigits$ind$coord,col=km.optdigits$Best.partition)
+table(km.optdigits$Best.partition,optdigits$class)
+NMI(km.optdigits$Best.partition,optdigits$class)
+ARI(km.optdigits$Best.partition,optdigits$class)
+km.optdigits$Best.nc
+```
+
+```{r}
+ward.optdigits=NbClust(optdigits[,-65],method = "ward.D",index = "silhouette", max.nc = 10)
+table(ward.optdigits$Best.partition,optdigits$class)
+NMI(ward.optdigits$Best.partition,optdigits$class)
+ARI(ward.optdigits$Best.partition,optdigits$class)
+plot(pca.optdigits$ind$coord,col=ward.optdigits$Best.partition,main = "CAH Ward sur optdigits")
+ward.optdigits$Best.nc
+```
+
+
+```{r}
+average.optdigits=NbClust(optdigits[,-65],method = "average", max.nc = 10,index = "silhouette")
+plot(pca.optdigits$ind$coord,col=average.optdigits$Best.partition,main = "CAH average sur optdigits")
+table(average.optdigits$Best.partition,optdigits$class)
+NMI(average.optdigits$Best.partition,optdigits$class)
+ARI(average.optdigits$Best.partition,optdigits$class)
+average.optdigits$Best.nc
+```
+
+
+
+```{r}
+single.optdigits=NbClust(optdigits[,-65],method = "single",index = "silhouette", max.nc = 10)
+
+plot(pca.optdigits$ind$coord,col=single.optdigits$Best.partition,main = "CAH single sur optdigits")
+table(single.optdigits$Best.partition,optdigits$class)
+NMI(single.optdigits$Best.partition,optdigits$class)
+ARI(single.optdigits$Best.partition,optdigits$class)
+single.optdigits$Best.nc
+```
+
+```{r}
+complete.optdigits=NbClust(optdigits[,-65],method = "complete",index = "silhouette", max.nc = 10)
+plot(pca.optdigits$ind$coord,col=complete.optdigits$Best.partition,main = "CAH complete sur optdigits")
+table(complete.optdigits$Best.partition,optdigits$class)
+NMI(complete.optdigits$Best.partition,optdigits$class)
+ARI(complete.optdigits$Best.partition,optdigits$class)
+complete.optdigits$Best.nc
+```
+
+On peut choisir 6 ( la moyenne des résultat) classes pour OPTDIGITS dataset.
+
+
+## Question 5 Clustering avec HCPC:
+
+### JAFFE
+```{r}
+hcpcward.jeffe=HCPC(pca.JAFFE,nb.clust=-1,method = "ward")
+
+hcpccomp.jeffe=HCPC(pca.JAFFE,nb.clust=-1,method = "complete")
+
+hcpcsingle.jeffe=HCPC(pca.JAFFE,nb.clust=-1,method = "single")
+
+hcpcav.jeffe=HCPC(pca.JAFFE,nb.clust=-1,method = "average")
+```
+
+
+### MNIST
+```{r}
+hcpcward.MNIST5=HCPC(pca.MNIST5,nb.clust=-1,method = "ward")
+
+hcpccomp.MNIST5=HCPC(pca.MNIST5,nb.clust=-1,method = "complete")
+
+hcpcsingle.MNIST5=HCPC(pca.MNIST5,nb.clust=-1,method = "single")
+
+hcpcav.MNIST5=HCPC(pca.MNIST5,nb.clust=-1,method = "average")
+```
+
+### MFEAT
+```{r}
+hcpcward.mfeat=HCPC(pca.mfeat,nb.clust=-1,method = "ward")
+
+hcpccomp.mfeat=HCPC(pca.mfeat,nb.clust=-1,method = "complete")
+
+hcpcsingle.mfeat=HCPC(pca.mfeat,nb.clust=-1,method = "single")
+
+hcpcav.mfeat=HCPC(pca.mfeat,nb.clust=-1,method = "average")
+
+```
+
+### USPS
+```{r}
+hcpcward.usps=HCPC(pca.usps,nb.clust=-1,method = "ward")
+
+hcpccomp.usps=HCPC(pca.usps,nb.clust=-1,method = "complete")
+
+hcpcsingle.usps=HCPC(pca.usps,nb.clust=-1,method = "single")
+
+hcpcav.usps=HCPC(pca.usps,nb.clust=-1,method = "average")
+```
+
+### OPTDIGITS
+
+```{r}
+hcpcward.optdigits=HCPC(pca.optdigits,nb.clust=-1,method = "ward")
+
+hcpccomp.optdigits=HCPC(pca.optdigits,nb.clust=-1,method = "complete")
+
+hcpcsingle.optdigits=HCPC(pca.optdigits,nb.clust=-1,method = "single")
+
+hcpcav.optdigits=HCPC(pca.optdigits,nb.clust=-1,method = "average")
+```
+
+
+## Question 6 , comparing HCPC results with NbClust
+
+### JAFFE
+```{r}
+#Comparaison avec le nombre de classes conseillée par Nbclust pour JAFFE : 8
+ward.JAFFE.r2=NbClust(JAFFE[,-677],method = "ward.D",index = "silhouette", max.nc = 8, min.nc = 8)$Best.partition
+table(ward.JAFFE.r2,hcpcward.jeffe$data.clust$clust)
+NMI(ward.JAFFE.r2,hcpcward.jeffe$data.clust$clust)
+plot(pca.JAFFE$ind$coord,col=ward.JAFFE.r2)
+
+complete.JAFFE.r2=NbClust(JAFFE[,-677],method = "complete",index = "silhouette", max.nc = 8, min.nc = 8)$Best.partition
+table(complete.JAFFE.r2,hcpccomp.jeffe$data.clust$clust)
+NMI(complete.JAFFE.r2,hcpccomp.jeffe$data.clust$clust)
+plot(pca.JAFFE$ind$coord,col=complete.JAFFE.r2)
+
+single.JAFFE.r2=NbClust(JAFFE[,-677],method = "single",index = "silhouette", max.nc = 8, min.nc = 8)$Best.partition
+table(single.JAFFE.r2,hcpcsingle.jeffe$data.clust$clust)
+NMI(single.JAFFE.r2,hcpcsingle.jeffe$data.clust$clust)
+average.JAFFE.r2=NbClust(JAFFE[,-677],method = "average",index = "silhouette", max.nc = 8, min.nc =8 )$Best.partition
+table(average.JAFFE.r2,hcpcav.jeffe$data.clust$clust)
+NMI(average.JAFFE.r2,hcpcav.jeffe$data.clust$clust)
+```
+### MNIST5
+```{r}
+#Comparaison avec le nombre de classes conseillée par Nbclust pour MNIST5 : 3
+ward.MNIST5.r2=NbClust(MNIST5[,-785],method = "ward.D",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(ward.MNIST5.r2,hcpcward.MNIST5$data.clust$clust)
+NMI(ward.MNIST5.r2,hcpcward.MNIST5$data.clust$clust)
+ARI(ward.MNIST5.r2,hcpcward.MNIST5$data.clust$clust)
+plot(pca.MNIST5$ind$coord,col=ward.MNIST5.r2)
+
+complete.MNIST5.r2=NbClust(MNIST5[,-785],method = "complete",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(complete.MNIST5.r2,hcpccomp.MNIST5$data.clust$clust)
+NMI(complete.MNIST5.r2,hcpccomp.MNIST5$data.clust$clust)
+ARI(complete.MNIST5.r2,hcpccomp.MNIST5$data.clust$clust)
+
+plot(pca.MNIST5$ind$coord,col=complete.MNIST5.r2)
+
+single.MNIST5.r2=NbClust(MNIST5[,-785],method = "single",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(single.MNIST5.r2,hcpcsingle.MNIST5$data.clust$clust)
+NMI(single.MNIST5.r2,hcpcsingle.MNIST5$data.clust$clust)
+
+ARI(single.MNIST5.r2,hcpcsingle.MNIST5$data.clust$clust)
+
+
+average.MNIST5.r2=NbClust(MNIST5[,-785],method = "average",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(average.MNIST5.r2,hcpcav.MNIST5$data.clust$clust)
+NMI(average.MNIST5.r2,hcpcav.MNIST5$data.clust$clust)
+ARI(average.MNIST5.r2,hcpcav.MNIST5$data.clust$clust)
+
+```
+### MFEA
+```{r}
+
+ward.mfeat.r2=NbClust(mfeat[,-241],method = "ward.D",index = "silhouette", max.nc = 5, min.nc = 5)$Best.partition
+table(ward.mfeat.r2,hcpcward.mfeat$data.clust$clust)
+NMI(ward.mfeat.r2,hcpcward.mfeat$data.clust$clust)
+
+ARI(ward.mfeat.r2,hcpcward.mfeat$data.clust$clust)
+
+plot(pca.mfeat$ind$coord,col=ward.mfeat.r2)
+
+complete.mfeat.r2=NbClust(mfeat[,-241],method = "complete",index = "silhouette", max.nc = 5, min.nc = 5)$Best.partition
+table(complete.mfeat.r2,hcpccomp.mfeat$data.clust$clust)
+NMI(complete.mfeat.r2,hcpccomp.mfeat$data.clust$clust)
+
+ARI(complete.mfeat.r2,hcpccomp.mfeat$data.clust$clust)
+
+plot(pca.mfeat$ind$coord,col=complete.mfeat.r2)
+
+single.mfeat.r2=NbClust(mfeat[,-241],method = "single",index = "silhouette", max.nc = 5, min.nc = 5)$Best.partition
+table(single.mfeat.r2,hcpcsingle.mfeat$data.clust$clust)
+NMI(single.mfeat.r2,hcpcsingle.mfeat$data.clust$clust)
+
+ARI(single.mfeat.r2,hcpcsingle.mfeat$data.clust$clust)
+
+
+average.mfeat.r2=NbClust(mfeat[,-241],method = "average",index = "silhouette", max.nc = 5, min.nc = 5)$Best.partition
+table(average.mfeat.r2,hcpcav.mfeat$data.clust$clust)
+NMI(average.mfeat.r2,hcpcav.mfeat$data.clust$clust)
+
+ARI(average.mfeat.r2,hcpcav.mfeat$data.clust$clust)
+```
+
+
+### USPS
+
+```{r}
+ward.usps.r2=NbClust(usps[,-257],method = "ward.D",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(ward.usps.r2,hcpcward.usps$data.clust$clust)
+NMI(ward.usps.r2,hcpcward.usps$data.clust$clust)
+
+ARI(ward.usps.r2,hcpcward.usps$data.clust$clust)
+
+plot(pca.usps$ind$coord,col=ward.usps.r2)
+
+complete.usps.r2=NbClust(usps[,-257],method = "complete",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(complete.usps.r2,hcpccomp.usps$data.clust$clust)
+NMI(complete.usps.r2,hcpccomp.usps$data.clust$clust)
+
+ARI(complete.usps.r2,hcpccomp.usps$data.clust$clust)
+
+plot(pca.usps$ind$coord,col=complete.usps.r2)
+
+single.usps.r2=NbClust(usps[,-257],method = "single",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(single.usps.r2,hcpcsingle.usps$data.clust$clust)
+NMI(single.usps.r2,hcpcsingle.usps$data.clust$clust)
+
+ARI(single.usps.r2,hcpcsingle.usps$data.clust$clust)
+
+
+average.usps.r2=NbClust(usps[,-257],method = "average",index = "silhouette", max.nc = 3, min.nc = 3)$Best.partition
+table(average.usps.r2,hcpcav.usps$data.clust$clust)
+NMI(average.usps.r2,hcpcav.usps$data.clust$clust)
+
+ARI(average.usps.r2,hcpcav.usps$data.clust$clust)
+```
+
+### OPTDIGITS
+
+
+```{r}
+ward.optdigits.r2=NbClust(optdigits[,-65],method = "ward.D",index = "silhouette", max.nc = 6, min.nc = 6)$Best.partition
+table(ward.optdigits.r2,hcpcward.optdigits$data.clust$clust)
+NMI(ward.optdigits.r2,hcpcward.optdigits$data.clust$clust)
+
+ARI(ward.optdigits.r2,hcpcward.optdigits$data.clust$clust)
+
+plot(pca.optdigits$ind$coord,col=ward.optdigits.r2)
+
+complete.optdigits.r2=NbClust(optdigits[,-65],method = "complete",index = "silhouette", max.nc = 6, min.nc = 6)$Best.partition
+table(complete.optdigits.r2,hcpccomp.optdigits$data.clust$clust)
+NMI(complete.optdigits.r2,hcpccomp.optdigits$data.clust$clust)
+
+ARI(complete.optdigits.r2,hcpccomp.optdigits$data.clust$clust)
+
+plot(pca.optdigits$ind$coord,col=complete.optdigits.r2)
+
+single.optdigits.r2=NbClust(optdigits[,-65],method = "single",index = "silhouette", max.nc = 6, min.nc = 6)$Best.partition
+table(single.optdigits.r2,hcpcsingle.optdigits$data.clust$clust)
+NMI(single.optdigits.r2,hcpcsingle.optdigits$data.clust$clust)
+
+ARI(single.optdigits.r2,hcpcsingle.optdigits$data.clust$clust)
+
+
+average.optdigits.r2=NbClust(optdigits[,-65],method = "average",index = "silhouette", max.nc = 6, min.nc = 6)$Best.partition
+table(average.optdigits.r2,hcpcav.optdigits$data.clust$clust)
+NMI(average.optdigits.r2,hcpcav.optdigits$data.clust$clust)
+
+ARI(average.optdigits.r2,hcpcav.optdigits$data.clust$clust)
+```
+
+En comparant les clustering de HCPC et NbClust on réalise qu'ils ne sont pas suffisants pour ces taches. On essay les modèles mixtes.
+
+## question 7 et question 10 ( comparaison des algo mixmod et Mclust avec les vrai classe):
+
+### JAFFE
+```{r}
+
+pc=prcomp(JAFFE[,-677])
+plot(as.data.frame(pc$x[,1:2]), col=JAFFE$class)
+strategie=mixmodStrategy(algo="EM",initMethod="smallEM",nbTry=10,epsilonInInit=0.00001,seed=42)
+mix.JAFFE=mixmodCluster(data=as.data.frame(pc$x[,1:10]),nbCluster=10, strategy=strategie,dataType="quantitative",models=mixmodGaussianModel(listModels=c("Gaussian_p_Lk_C")))
+mix.JAFFE@bestResult@partition
+# comparaison des résultats de mixmod et les vrais classes
+table(mix.JAFFE@bestResult@partition,JAFFE$class)
+NMI(mix.JAFFE@bestResult@partition,JAFFE$class)
+
+plot(as.data.frame(pc$x[,1:2]), col=mix.JAFFE@bestResult@partition)
+# comparaison des résultats de Mclust et les vrais classes
+mc.JAFFE=Mclust(data= JAFFE[,-677],G=10)
+table( mc.JAFFE$classification,JAFFE$class)
+NMI(mc.JAFFE$classification,JAFFE$class)
+
+```
+10 Classes for JAFFE
+
+### MNIST
+```{r}
+pc.M=prcomp(MNIST5[,-785])
+plot(as.data.frame(pc.M$x[,1:2]), col=MNIST5$class)
+strategie=mixmodStrategy(algo="EM",initMethod="smallEM",nbTry=10,epsilonInInit=0.00001,seed=42)
+mix.MNIST5=mixmodCluster(data=as.data.frame(pc.M$x[,1:2]),nbCluster=10,strategy=strategie,dataType="quantitative",models=mixmodGaussianModel())
+mix.MNIST5=mixmodCluster(data=as.data.frame(pc.M$x[,1:10]),nbCluster=10, strategy=strategie,dataType="quantitative",models=mixmodGaussianModel(listModels=c("Gaussian_p_Lk_Dk_A_Dk")))
+mix.MNIST5@bestResult@partition
+# comparaison des résultats de mixmod et les vrais classes
+table(mix.MNIST5@bestResult@partition,MNIST5$class)
+NMI(mix.MNIST5@bestResult@partition,MNIST5$class)
+ARI(mix.MNIST5@bestResult@partition,MNIST5$class)
+plot(as.data.frame(pc.M$x[,1:2]), col=mix.MNIST5@bestResult@partition)
+# comparaison des résultats de Mclust et les vrais classes
+mc.MNIST5=Mclust(data= pc.M$x[,1:2],G=10, modelNames = c("VEV"))
+table( mc.MNIST5$classification,MNIST5$class)
+NMI(mc.MNIST5$classification,MNIST5$class)
+ARI(mc.MNIST5$classification,MNIST5$class)
+```
+
+### MFEA
+
+```{r}
+pc.MF=prcomp(mfeat[,-241])
+plot(as.data.frame(pc.MF$x[,1:2]), col=mfeat$class)
+strategie=mixmodStrategy(algo="EM",initMethod="smallEM",nbTry=10,epsilonInInit=0.00001,seed=42)
+mix.mfeat=mixmodCluster(data=as.data.frame(pc.MF$x[,1:2]),nbCluster=10,strategy=strategie,dataType="quantitative",models=mixmodGaussianModel())
+
+mix.mfeat=mixmodCluster(data=as.data.frame(pc.MF$x[,1:10]),nbCluster=10, strategy=strategie,dataType="quantitative",models=mixmodGaussianModel(listModels=c("Gaussian_pk_Lk_Dk_A_Dk")))
+
+mix.mfeat@bestResult@partition
+table(mix.mfeat@bestResult@partition,mfeat$class)
+NMI(mix.mfeat@bestResult@partition,mfeat$class)
+ARI(mix.mfeat@bestResult@partition,mfeat$class)
+
+plot(as.data.frame(pc.MF$x[,1:2]), col=mix.mfeat@bestResult@partition)
+
+mc.mfeat=Mclust(data= pc.MF$x[,1:10],G=10, modelNames = c("VVV"))
+table( mc.mfeat$classification,mfeat$class)
+NMI(mc.mfeat$classification,mfeat$class)
+ARI(mc.mfeat$classification,mfeat$class)
+
+```
+
+### USPS
+```{r}
+pc.US=prcomp(usps[,-257])
+plot(as.data.frame(pc.US$x[,1:2]), col=usps$class)
+strategie=mixmodStrategy(algo="EM",initMethod="smallEM",nbTry=10,epsilonInInit=0.00001,seed=42)
+mix.usps=mixmodCluster(data=as.data.frame(pc.MF$x[,1:2]),nbCluster=10,strategy=strategie,dataType="quantitative",models=mixmodGaussianModel())
+mix.usps=mixmodCluster(data=as.data.frame(pc.US$x[,1:10]),nbCluster=10, strategy=strategie,dataType="quantitative",models=mixmodGaussianModel(listModels=c("Gaussian_pk_Lk_Bk")))
+
+mix.usps@bestResult@partition
+table(mix.usps@bestResult@partition,usps$class)
+NMI(mix.usps@bestResult@partition,usps$class)
+ARI(mix.usps@bestResult@partition,usps$class)
+plot(as.data.frame(pc.US$x[,1:2]), col=mix.usps@bestResult@partition)
+
+
+#2 composantes
+mc.usps=Mclust(data= pc.US$x[,1:2],G=10, modelNames = c("VVV"))
+table( mc.usps$classification,usps$class)
+NMI(mc.usps$classification,usps$class)
+ARI(mc.usps$classification,usps$class)
+#10 composantes
+mc.usps=Mclust(data= pc.US$x[,1:10],G=10, modelNames = c("VEV"))
+table( mc.usps$classification,usps$class)
+NMI(mc.usps$classification,usps$class)
+ARI(mc.usps$classification,usps$class)
+
+```
+
+
+### OPTDIGITS:
+```{r}
+pc.op=prcomp(optdigits[,-65])
+plot(as.data.frame(pc.op$x[,1:2]), col=optdigits$class)
+strategie=mixmodStrategy(algo="EM",initMethod="smallEM",nbTry=10,epsilonInInit=0.00001,seed=42)
+mix.optdigits=mixmodCluster(data=as.data.frame(pc.op$x[,1:2]),nbCluster=10,strategy=strategie,dataType="quantitative",models=mixmodGaussianModel())
+
+mix.optdigits=mixmodCluster(data=as.data.frame(pc.op$x[,1:10]),nbCluster=10, strategy=strategie,dataType="quantitative",models=mixmodGaussianModel(listModels=c("Gaussian_pk_L_Dk_A_Dk")))
+
+mix.optdigits@bestResult@partition
+table(mix.optdigits@bestResult@partition,optdigits$class)
+NMI(mix.optdigits@bestResult@partition,optdigits$class)
+ARI(mix.optdigits@bestResult@partition,optdigits$class)
+plot(as.data.frame(pc.op$x[,1:2]), col=mix.optdigits@bestResult@partition)
+
+mc.optdigits=Mclust(data= pc.op$x[,1:10],G=10, modelNames = c("EEV"))
+table( mc.optdigits$classification,optdigits$class)
+NMI(mc.optdigits$classification,optdigits$class)
+ARI(mc.optdigits$classification,optdigits$class)
+
+```
+
+
+## Question 8:
+
+```{r}
+NMI(mix.JAFFE@bestResult@partition,mc.JAFFE$classification)
+#0.92
+
+#Les deux partitions sont très proches
+
+```
+
+```{r}
+NMI(mix.optdigits@bestResult@partition,mc.optdigits$classification)
+#0.847
+```
+```{r}
+NMI(mix.usps@bestResult@partition,mc.usps$classification)
+#0.627
+```
+
+```{r}
+NMI(mix.MNIST5@bestResult@partition,mc.MNIST5$classification)
+#0.39
+```
+```{r}
+NMI(mix.mfeat@bestResult@partition,mc.mfeat$classification)
+#0.740
+
+```
+
+## Question 9:
+
+MclustDR est une fonction de reduction de dimension pour visualiser des cluster obtenu a partir d'une densité gaussienne:
+
+```{r}
+mdr.JAFFE=MclustDR(mc.JAFFE)
+plot(mdr.JAFFE,what ="classification")
+```
+```{r}
+mdr.optdigits=MclustDR(mc.optdigits)
+plot(mdr.optdigits,what ="classification")
+
+```
+```{r}
+mdr.usps=MclustDR(mc.usps)
+plot(mdr.usps,what ="classification")
+
+```
+
+```{r}
+mdr.MNIST5=MclustDR(mc.MNIST5)
+plot(mdr.MNIST5,what ="classification")
+
+```
+
+```{r}
+mdr.mfeat=MclustDR(mc.mfeat)
+plot(mdr.mfeat,what ="classification")
+```
+
+## Question 11:
+```{r}
+##HCPC avec le vrais nombre de classes 
+hcpcward.mfeat2=HCPC(pca.mfeat,method = "ward",nb.clust = 10 , graph=FALSE)
+
+hcpccomp.mfeat2=HCPC(pca.mfeat,method = "complete", nb.clust = 10,graph=FALSE)
+
+hcpcsingle.mfeat2=HCPC(pca.mfeat,method = "single",nb.clust = 10,graph=FALSE)
+
+hcpcav.mfeat2=HCPC(pca.mfeat,method = "average",nb.clust = 10,graph=FALSE)
+################################# MNIST5#####################################
+
+hcpcward.MNIST52=HCPC(pca.MNIST5,method = "ward",nb.clust = 10 , graph=FALSE)
+
+hcpccomp.MNIST52=HCPC(pca.MNIST5,method = "complete", nb.clust = 10,graph=FALSE)
+
+hcpcsingle.MNIST52=HCPC(pca.MNIST5,method = "single",nb.clust = 10,graph=FALSE)
+
+hcpcav.MNIST52=HCPC(pca.MNIST5,method = "average",nb.clust = 10,graph=FALSE)
+
+################################# USPS#######################################
+
+hcpcward.usps2=HCPC(pca.usps,method = "ward",nb.clust = 10 , graph=FALSE)
+
+hcpccomp.usps2=HCPC(pca.usps,method = "complete", nb.clust = 10,graph=FALSE)
+
+hcpcsingle.usps2=HCPC(pca.usps,method = "single",nb.clust = 10,graph=FALSE)
+
+hcpcav.usps2=HCPC(pca.usps,method = "average",nb.clust = 10,graph=FALSE)
+
+################################ OPTDIGITS##################################
+
+hcpcward.optdigits2=HCPC(pca.optdigits,method = "ward",nb.clust = 10 , graph=FALSE)
+
+hcpccomp.optdigits2=HCPC(pca.optdigits,method = "complete", nb.clust = 10,graph=FALSE)
+
+hcpcsingle.optdigits2=HCPC(pca.optdigits,method = "single",nb.clust = 10,graph=FALSE)
+
+hcpcav.optdigits2=HCPC(pca.optdigits,method = "average",nb.clust = 10,graph=FALSE)
+
+################################## JAFFE ############################################
+
+hcpcward.JAFFE2=HCPC(pca.JAFFE,method = "ward",nb.clust = 10 , graph=FALSE)
+
+hcpccomp.JAFFE2=HCPC(pca.JAFFE,method = "complete", nb.clust = 10,graph=FALSE)
+
+hcpcsingle.JAFFE2=HCPC(pca.JAFFE,method = "single",nb.clust = 10,graph=FALSE)
+
+hcpcav.JAFFE2=HCPC(pca.JAFFE,method = "average",nb.clust = 10,graph=FALSE)
+
+```
+Visualisation avec TSNE:
+### MFEAT
+```{r}
+tsne.mfeat=Rtsne(mfeat[,-241],dim=2,perplexity=50,check_duplicates = FALSE)
+
+plot(tsne.mfeat$Y,col=mfeat$class,xlab="1ere composante", ylab="2eme composante", main="Vraie partition de mfeat avec t-sne") #true
+
+plot(tsne.mfeat$Y,col=km.mfeat$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Kmean NbClust avec t-sne") #kmean NbClust
+
+plot(tsne.mfeat$Y,col=ward.mfeat$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Ward NbClust avec t-sne") #ward NbClust
+
+plot(tsne.mfeat$Y,col=complete.mfeat$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH Complete NbClust avec t-sne") #CAH complete NbClust
+
+plot(tsne.mfeat$Y,col=single.mfeat$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH single NbClust avec t-sne") #CAH single NbClust
+
+plot(tsne.mfeat$Y,col=average.mfeat$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH average NbClust avec t-sne") #CAH average NbClust
+
+
+plot(tsne.mfeat$Y,col=hcpcward.mfeat2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC ward NbClust avec t-sne") #HCPC ward
+
+plot(tsne.mfeat$Y,col=hcpccomp.mfeat2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC complete NbClust avec t-sne") #HCPC complete
+
+plot(tsne.mfeat$Y,col=hcpcsingle.mfeat2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC single NbClust avec t-sne") #HCPC single
+
+plot(tsne.mfeat$Y,col=hcpcav.mfeat2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC average NbClust avec t-sne") #HCPC average
+
+
+plot(tsne.mfeat$Y,col=mix.mfeat@bestResult@partition, xlab="1ere composante", ylab="2eme composante", main="GMM Rmixmod avec t-sne") #GMM Rmixmod
+
+plot(tsne.mfeat$Y,col=mc.mfeat$classification, xlab="1ere composante", ylab="2eme composante", main="GMM mclust avec t-sne") #GMM mclust
+```
+
+### MNIST5
+```{r}
+tsne.MNIST5=Rtsne(MNIST5[,-785],dim=2,perplexity=50)
+
+plot(tsne.MNIST5$Y,col=MNIST5$class,xlab="1ere composante", ylab="2eme composante", main="Vraie partition de MNIST5 avec t-sne") #true
+
+plot(tsne.MNIST5$Y,col=km.MNIST5$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Kmean NbClust avec t-sne") #kmean NbClust
+
+plot(tsne.MNIST5$Y,col=ward.MNIST5$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Ward NbClust avec t-sne") #ward NbClust
+
+plot(tsne.MNIST5$Y,col=complete.MNIST5$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH Complete NbClust avec t-sne") #CAH complete NbClust
+
+plot(tsne.MNIST5$Y,col=single.MNIST5$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH single NbClust avec t-sne") #CAH single NbClust
+
+plot(tsne.MNIST5$Y,col=average.MNIST5$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH average NbClust avec t-sne") #CAH average NbClust
+
+
+plot(tsne.MNIST5$Y,col=hcpcward.MNIST52$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC ward NbClust avec t-sne") #HCPC ward
+
+plot(tsne.MNIST5$Y,col=hcpccomp.MNIST52$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC complete NbClust avec t-sne") #HCPC complete
+
+plot(tsne.MNIST5$Y,col=hcpcsingle.MNIST52$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC single NbClust avec t-sne") #HCPC single
+
+plot(tsne.MNIST5$Y,col=hcpcav.MNIST52$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC average NbClust avec t-sne") #HCPC average
+
+
+plot(tsne.MNIST5$Y,col=mix.MNIST5@bestResult@partition, xlab="1ere composante", ylab="2eme composante", main="GMM Rmixmod avec t-sne") #GMM Rmixmod
+
+plot(tsne.MNIST5$Y,col=mc.MNIST5$classification, xlab="1ere composante", ylab="2eme composante", main="GMM mclust avec t-sne") #GMM mclust
+```
+
+### USPS
+```{r}
+tsne.usps=Rtsne(usps[,-257],dim=2,perplexity=70,check_duplicates = FALSE)
+
+plot(tsne.usps$Y,col=usps$class,xlab="1ere composante", ylab="2eme composante", main="Vraie partition de usps avec t-sne") #true
+
+plot(tsne.usps$Y,col=km.usps$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Kmean NbClust avec t-sne") #kmean NbClust
+
+plot(tsne.usps$Y,col=ward.usps$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Ward NbClust avec t-sne") #ward NbClust
+
+plot(tsne.usps$Y,col=complete.usps$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH Complete NbClust avec t-sne") #CAH complete NbClust
+
+plot(tsne.usps$Y,col=single.usps$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH single NbClust avec t-sne") #CAH single NbClust
+
+plot(tsne.usps$Y,col=average.usps$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH average NbClust avec t-sne") #CAH average NbClust
+
+
+plot(tsne.usps$Y,col=hcpcward.usps2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC ward NbClust avec t-sne") #HCPC ward
+
+plot(tsne.usps$Y,col=hcpccomp.usps2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC complete NbClust avec t-sne") #HCPC complete
+
+plot(tsne.usps$Y,col=hcpcsingle.usps2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC single NbClust avec t-sne") #HCPC single
+
+plot(tsne.usps$Y,col=hcpcav.usps2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC average NbClust avec t-sne") #HCPC average
+
+
+plot(tsne.usps$Y,col=mix.usps@bestResult@partition, xlab="1ere composante", ylab="2eme composante", main="GMM Rmixmod avec t-sne") #GMM Rmixmod
+
+plot(tsne.usps$Y,col=mc.usps$classification, xlab="1ere composante", ylab="2eme composante", main="GMM mclust avec t-sne") #GMM mclust
+
+```
+
+
+### OPTDIGITS
+```{r}
+tsne.optdigits=Rtsne(optdigits[,-65],dim=2,perplexity=50,check_duplicates = FALSE)
+
+plot(tsne.optdigits$Y,col=optdigits$class,xlab="1ere composante", ylab="2eme composante", main="Vraie partition de optdigits avec t-sne") #true
+
+plot(tsne.optdigits$Y,col=km.optdigits$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Kmean NbClust avec t-sne") #kmean NbClust
+
+plot(tsne.optdigits$Y,col=ward.optdigits$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Ward NbClust avec t-sne") #ward NbClust
+
+plot(tsne.optdigits$Y,col=complete.optdigits$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH Complete NbClust avec t-sne") #CAH complete NbClust
+
+plot(tsne.optdigits$Y,col=single.optdigits$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH single NbClust avec t-sne") #CAH single NbClust
+
+plot(tsne.optdigits$Y,col=average.optdigits$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH average NbClust avec t-sne") #CAH average NbClust
+
+
+plot(tsne.optdigits$Y,col=hcpcward.optdigits2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC ward NbClust avec t-sne") #HCPC ward
+
+plot(tsne.optdigits$Y,col=hcpccomp.optdigits2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC complete NbClust avec t-sne") #HCPC complete
+
+plot(tsne.optdigits$Y,col=hcpcsingle.optdigits2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC single NbClust avec t-sne") #HCPC single
+
+plot(tsne.optdigits$Y,col=hcpcav.optdigits2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC average NbClust avec t-sne") #HCPC average
+
+
+plot(tsne.optdigits$Y,col=mix.optdigits@bestResult@partition, xlab="1ere composante", ylab="2eme composante", main="GMM Rmixmod avec t-sne") #GMM Rmixmod
+
+plot(tsne.optdigits$Y,col=mc.optdigits$classification, xlab="1ere composante", ylab="2eme composante", main="GMM mclust avec t-sne") #GMM mclust
+
+```
+
+### JAFFE 
+
+```{r}
+tsne.JAFFE=Rtsne(JAFFE[,-677],dim=2,perplexity=50)
+
+plot(tsne.JAFFE$Y,col=JAFFE$class,xlab="1ere composante", ylab="2eme composante", main="Vraie partition avec t-sne") #true
+#On remarque qu'en general t-sne donne une bonne representation 
+#des different dataset du projet
+
+plot(tsne.JAFFE$Y,col=km.JAFFE$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Kmean NbClust avec t-sne") #kmean NbClust
+
+plot(tsne.JAFFE$Y,col=ward.JAFFE$Best.partition, xlab="1ere composante", ylab="2eme composante", main="Ward NbClust avec t-sne") #ward NbClust
+
+plot(tsne.JAFFE$Y,col=complete.JAFFE$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH Complete NbClust avec t-sne") #CAH complete NbClust
+
+plot(tsne.JAFFE$Y,col=single.JAFFE$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH single NbClust avec t-sne") #CAH single NbClust
+
+plot(tsne.JAFFE$Y,col=average.JAFFE$Best.partition, xlab="1ere composante", ylab="2eme composante", main="CAH average NbClust avec t-sne") #CAH average NbClust
+
+
+plot(tsne.JAFFE$Y,col=hcpcward.JAFFE2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC ward NbClust avec t-sne") #HCPC ward
+
+plot(tsne.JAFFE$Y,col=hcpccomp.JAFFE2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC complete NbClust avec t-sne") #HCPC complete
+
+plot(tsne.JAFFE$Y,col=hcpcsingle.JAFFE2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC single NbClust avec t-sne") #HCPC single
+
+plot(tsne.JAFFE$Y,col=hcpcav.JAFFE2$data.clust$clust, xlab="1ere composante", ylab="2eme composante", main="CAH HCPC average NbClust avec t-sne") #HCPC average
+
+
+plot(tsne.JAFFE$Y,col=mix.JAFFE@bestResult@partition, xlab="1ere composante", ylab="2eme composante", main="GMM Rmixmod avec t-sne") #GMM Rmixmod
+
+plot(tsne.JAFFE$Y,col=mc.JAFFE$classification, xlab="1ere composante", ylab="2eme composante", main="GMM mclust avec t-sne") #GMM mclust
+```
+
+## Question 12
+
+```{r}
+autoencodedJaffe=read.csv("autoencodedJaffe.csv", header = F, skip=-1)
+plot(autoencodedJaffe, col=JAFFE$class, main="Reduction de JAFFE avec un autoencoder")
+Automc.JAFFE=Mclust(data=autoencodedJaffe,G=10)
+NMI(Automc.JAFFE$classification,JAFFE$class)
+ARI(Automc.JAFFE$classification,JAFFE$class)
+plot(autoencodedJaffe, col=Automc.JAFFE$classification, main="Mclust de JAFFE  avec un autoencoder")
+```
+
+
+
+
+```{r}
+autoencodedmnist=read.csv("autoencodedmnist.csv", header = F, skip=-1)
+plot(autoencodedmnist, col=MNIST5$class, main="Reduction de MNIST5 avec un autoencoder")
+Automc.MNIST5=Mclust(data= autoencodedmnist,G=10)
+NMI(Automc.MNIST5$classification,MNIST5$class)
+ARI(Automc.MNIST5$classification,MNIST5$class)
+plot(autoencodedmnist, col=Automc.MNIST5$classification, main="Mclust de mnist autoencoder")
+
+```
+
+
+
+```{r}
+autoencodedUSPS=read.csv("autoencodedUSPS.csv", header = F, skip=-1)
+plot(autoencodedUSPS, col=usps$class, main="Reduction de usps avec un autoencoder")
+Automc.usps=Mclust(data= autoencodedUSPS,G=10,c("VEV"))
+NMI(Automc.usps$classification,usps$class)
+ARI(Automc.usps$classification,usps$class)
+plot(autoencodedUSPS, col=Automc.usps$classification, main="Mclust de usps autoencoder")
+
+```
+
+
+
+```{r}
+autoencodedMFEAT=read.csv("autoencodedMFEAT.csv", header = F, skip=-1)
+plot(autoencodedMFEAT, col=mfeat$class, main="Reduction de mfeat avec un autoencoder")
+Automc.mfeat=Mclust(data= autoencodedMFEAT,G=10,modelNames = c("VEV"))
+NMI(Automc.mfeat$classification,mfeat$class)
+ARI(Automc.mfeat$classification,mfeat$class)
+plot(autoencodedMFEAT, col=Automc.mfeat$classification, main="Mclust de mfeat autoencoder")
+
+```
+
+
+
+```{r}
+autoencodedOPTDIGITS=read.csv("autoencodedOPTDIGITS.csv", header = F, skip=-1)
+plot(autoencodedOPTDIGITS, col=optdigits$class, main="Reduction de optdigits avec un autoencoder")
+Automc.optdigits=Mclust(data= autoencodedOPTDIGITS,G=10, modelNames = c("VVV"))
+NMI(Automc.optdigits$classification,optdigits$class)
+ARI(Automc.optdigits$classification,optdigits$class)
+plot(autoencodedOPTDIGITS, col=Automc.optdigits$classification, main="Mclust de optdigits autoencoder")
+```
+
