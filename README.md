@@ -34,7 +34,7 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
  
 ### PART2:
 1. Tokenizing the text using :
-    * BERT
+    * BERT:
     * RoBERTa 
 2. Clustering on orignal data (Classic 4 data which comprises of scientific articles' abstracts ,  BBC data which contains headlines from the bbc news channel ,article1 data which comprises of news headlines , article2 data which comprises of wikipedia summaries.)
     * This is done on the data without any dimensionality reduction technique
