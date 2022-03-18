@@ -5,6 +5,8 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
  
  
  
+ 
+ 
 # first project : Scientific Articles' abstract text mining.
 
 - This project is comprised of 3 parts:
