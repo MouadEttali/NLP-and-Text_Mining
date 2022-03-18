@@ -28,13 +28,13 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
     * Followed by a clustering technique ( Kmeans, Spherical Kmeans , factorial Kmeans , Hierarchal clustering(WARD , Complete , Linkage and Single Metrics), and HDBSCAN 
 5. Clustering using combined methods ( where the dimension reduction and clustering are done at the same time ):
     * Reduced kmeans
-    * Factorial kmeans
+    * Factorial kmeans  
     * Deep Clustering Network
     * deep KMeans
  
 ### PART2:
 1. Tokenizing the text using :
-    * BERT
+    * BERTs
     * RoBERTa 
 2. Clustering on orignal data (Classic 4 data which comprises of scientific articles' abstracts ,  BBC data which contains headlines from the bbc news channel ,article1 data which comprises of news headlines , article2 data which comprises of wikipedia summaries.)
     * This is done on the data without any dimensionality reduction technique
