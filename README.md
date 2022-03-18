@@ -17,7 +17,7 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
 
 ## This project is comprised of 2 parts:
 ### PART1:
-1. Tokenizing the text using :
+1. Tokenizing the text using:
     * Word2Vec
     * GloVe 
 2. Clustering on orignal data (Classic 4 data which comprises of scientific articles' abstracts , and BBC data which contains headlines from the bbc news channel )
