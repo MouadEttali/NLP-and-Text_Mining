@@ -13,7 +13,7 @@ In this notebook I will be adressing NLP and text mining tasks, starting off wit
 3. Clustering.
 
 
-# Second project : Dimensionality Reduction and clustering + interprability.sss
+# Second project : Dimensionality Reduction and clustering + interprability.
 
 ## This project is comprised of 2 parts:
 ### PART1:
