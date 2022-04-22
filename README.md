@@ -2,7 +2,7 @@
 
 
 In this notebook I will be adressing NLP and text mining tasks, starting off with the basics and then moving on to implementing some ideas from NLP articles into working codes. then some higher level concepts like Transformers,BERT and attention etc...
- sssss
+ ssss
  
  
 # first project : Scientific Articles' abstract text mining.
